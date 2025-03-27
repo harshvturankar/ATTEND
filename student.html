@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner & Input Form</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            margin-top: 20px;
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 500px;
+        }
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+        }
+        #result {
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #cccccc;
+        }
+        button {
+            background-color: #6200ea;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>QR Code Scanner</h2>
+        <div id="qr-reader"></div>
+        <p id="result">Scan a QR code to see the result here</p>
+    </div>
+
+    <div class="container">
+        <h2>Manual Input Form</h2>
+        <input type="text" id="studentName" placeholder="Enter Student Name">
+        <input type="text" id="rollNumber" placeholder="Enter Roll Number">
+        <button onclick="saveManualEntry()">Save Data</button>
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('result').innerText = "Scanned QR Code: " + decodedText;
+
+            // Assuming QR Code contains Student Name and Roll Number in "Name-Roll" format
+            let data = decodedText.split("-");
+            if (data.length === 2) {
+                let studentName = data[0].trim();
+                let rollNumber = data[1].trim();
+
+                // Store in localStorage
+                saveStudentData(studentName, rollNumber);
+            } else {
+                alert("Invalid QR Code format!");
+            }
+        }
+
+        function onScanFailure(error) {
+            console.warn(`QR scan failed: ${error}`);
+        }
+
+        // Initialize the QR Scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: 250 }
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        function saveManualEntry() {
+            let studentName = document.getElementById('studentName').value.trim();
+            let rollNumber = document.getElementById('rollNumber').value.trim();
+
+            if (studentName && rollNumber) {
+                saveStudentData(studentName, rollNumber);
+                alert("Student details saved!");
+            } else {
+                alert("Please enter both name and roll number.");
+            }
+        }
+
+        function saveStudentData(name, rollNumber) {
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+            students.push({ name, rollNumber });
+            localStorage.setItem("students", JSON.stringify(students));
+        }
+    </script>
+</body>
+</html>
